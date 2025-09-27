@@ -60,23 +60,32 @@ async function submitStep1(params) {
   }
 }
 
-// Sign transaction using signer
-async function submitStep2(unSignedTx) {
-  const { signer } = useWallet();
-
+// Sign and send transaction using signer (MetaMask approach)
+async function submitStep2(unSignedTx, signer) {
   try {
-    console.log('🔄 Signing will transaction...', unSignedTx);
+    console.log('🔄 Signing and sending will transaction...', unSignedTx);
     if (signer == null) {
       throw new Error('No signer available');
     }
 
-    const tx = await signer.signTransaction(unSignedTx);
-
-    console.log('✅ Transaction signed successfully:', tx);
-    return tx;
+    // Use sendTransaction instead of signTransaction for MetaMask compatibility
+    const txResponse = await signer.sendTransaction(unSignedTx);
+    
+    console.log('✅ Transaction sent successfully:', txResponse.hash);
+    
+    // Wait for confirmation
+    console.log('⏳ Waiting for transaction confirmation...');
+    const receipt = await txResponse.wait();
+    
+    console.log('✅ Transaction confirmed:', receipt);
+    
+    return {
+      hash: txResponse.hash,
+      receipt: receipt
+    };
 
   } catch (error) {
-    console.error('❌ Error signing transaction:', error);
+    console.error('❌ Error signing/sending transaction:', error);
     throw error;
   }
 }
@@ -123,6 +132,7 @@ const CreateSecretForm = ({
   setShowCreateSecretForm,
   onAddSecret,
 }) => {
+  const { account, signer } = useWallet(); // Move useWallet hook to component level
   const [friends, setFriends] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -157,29 +167,8 @@ const CreateSecretForm = ({
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.name.trim()) {
-      newErrors.name = "Secret name is required";
-    }
-
-    if (!formData.description.trim()) {
-      newErrors.description = "Description is required";
-    }
-
-    if (!formData.thumbnailImage) {
-      newErrors.thumbnailImage = "Thumbnail image is required";
-    }
-
-    if (!formData.documentFile) {
-      newErrors.documentFile = "Document file is required";
-    }
-
-    if (formData.selectedFriends.length === 0) {
-      newErrors.selectedFriends = "Please select at least one friend";
-    }
-
-    if (!formData.interval) {
-      newErrors.interval = "Please select an interval";
-    }
+    // All fields are now optional - no validation errors
+    // You can add custom validation logic here if needed for specific cases
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -518,6 +507,37 @@ const CreateSecretForm = ({
             <Button
               type="submit"
               className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground"
+              onClick={async (e) => {
+                e.preventDefault(); // Prevent form submission
+                
+                try {
+                  console.log('🚀 Starting will creation process...');
+                  
+                  // Step 1: Prepare transaction
+                  const unSignedTx = await submitStep1({
+                    userAddress: account,
+                    nominees: [
+                      "0x0B80f1bf7ED4e33DD6AB6Ddbb4437fC3CE97F8A1"
+                    ],
+                    deadlineSeconds: 30,
+                    encryptedData: "test-secret-data"
+                  });
+                  
+                  // Step 2: Sign and send transaction (MetaMask will handle both)
+                  const transactionData = unSignedTx.data.transactionData;
+                  const result = await submitStep2(transactionData, signer);
+                  
+                  console.log("✅ Will created successfully!", result);
+                  alert(`Will created successfully! Transaction hash: ${result.hash}`);
+                  
+                  // Close the dialog on success
+                  setShowCreateSecretForm(false);
+                  
+                } catch (error) {
+                  console.error("❌ Error creating will:", error);
+                  alert("Error creating will: " + error.message);
+                }
+              }}
             >
               <FileText className="h-4 w-4 mr-2" />
               Create Secret

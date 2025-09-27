@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { ethers } from "ethers";
+import { useNavigate } from "react-router";
 import { useUserAPI } from "./useUserAPI";
 
 export const useWallet = () => {
@@ -9,6 +10,7 @@ export const useWallet = () => {
   const [isConnected, setIsConnected] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   // User API hook for creating users
   const { createUser, isCreatingUser } = useUserAPI();
@@ -73,6 +75,9 @@ export const useWallet = () => {
           // Don't fail the wallet connection if user creation fails
         }
 
+        // Redirect to dashboard after successful connection
+        navigate("/dashboard");
+
         return true;
       }
     } catch (err) {
@@ -99,6 +104,9 @@ export const useWallet = () => {
     // Clear localStorage
     localStorage.removeItem("walletConnected");
     localStorage.removeItem("walletAddress");
+
+    // Redirect to home page after disconnection
+    navigate("/");
   };
 
   // Get account balance

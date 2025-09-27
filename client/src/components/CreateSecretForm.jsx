@@ -67,16 +67,11 @@ async function submitStep1(params) {
 // Sign and send transaction using signer (MetaMask approach)
 async function submitStep2(unSignedTx, signer) {
   try {
-    console.log("🔄 Signing will transaction...", unSignedTx);
     console.log("🔄 Signing and sending will transaction...", unSignedTx);
     if (signer == null) {
       throw new Error("No signer available");
     }
 
-    const tx = await signer.signTransaction(unSignedTx);
-
-    console.log("✅ Transaction signed successfully:", tx);
-    return tx;
     // Use sendTransaction instead of signTransaction for MetaMask compatibility
     const txResponse = await signer.sendTransaction(unSignedTx);
 
@@ -93,7 +88,6 @@ async function submitStep2(unSignedTx, signer) {
       receipt: receipt,
     };
   } catch (error) {
-    console.error("❌ Error signing transaction:", error);
     console.error("❌ Error signing/sending transaction:", error);
     throw error;
   }
@@ -249,16 +243,12 @@ const CreateSecretForm = ({
     }
   };
 
-  const handleFriendSelect = (friendWalletAddress) => {
-    const friend = friends.find(
-      (f) => f.friendWalletAddress === friendWalletAddress
-    );
+  const handleFriendSelect = (friendId) => {
+    const friend = friends.find((f) => f.id === parseInt(friendId));
     if (
       friend &&
       formData.selectedFriends.length < 3 &&
-      !formData.selectedFriends.find(
-        (f) => f.friendWalletAddress === friend.friendWalletAddress
-      )
+      !formData.selectedFriends.find((f) => f.id === friend.id)
     ) {
       setFormData((prev) => ({
         ...prev,
@@ -270,12 +260,10 @@ const CreateSecretForm = ({
     }
   };
 
-  const removeFriend = (friendWalletAddress) => {
+  const removeFriend = (friendId) => {
     setFormData((prev) => ({
       ...prev,
-      selectedFriends: prev.selectedFriends.filter(
-        (f) => f.friendWalletAddress !== friendWalletAddress
-      ),
+      selectedFriends: prev.selectedFriends.filter((f) => f.id !== friendId),
     }));
   };
 
@@ -432,13 +420,13 @@ const CreateSecretForm = ({
                 <div className="flex flex-wrap gap-2 mb-2">
                   {formData.selectedFriends.map((friend) => (
                     <div
-                      key={friend.friendWalletAddress}
+                      key={friend.id}
                       className="flex items-center gap-2 bg-primary/10 text-primary px-3 py-1 rounded-full text-sm"
                     >
-                      <span>{friend.friendName}</span>
+                      <span>{friend.name}</span>
                       <button
                         type="button"
-                        onClick={() => removeFriend(friend.friendWalletAddress)}
+                        onClick={() => removeFriend(friend.id)}
                         className="hover:bg-primary/20 rounded-full p-1"
                       >
                         <X className="h-3 w-3" />
@@ -448,10 +436,7 @@ const CreateSecretForm = ({
                 </div>
               )}
               {formData.selectedFriends.length < 3 && (
-                <Select
-                  key={formData.selectedFriends.length}
-                  onValueChange={handleFriendSelect}
-                >
+                <Select onValueChange={handleFriendSelect}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select friends to share with..." />
                   </SelectTrigger>

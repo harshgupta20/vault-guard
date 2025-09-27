@@ -7,6 +7,7 @@ import ErrorPage from './pages/ErrorPage'
 import Navbar from './components/Navbar'
 import FriendSecrets from './pages/FriendSecrets'
 import Footer from './components/Footer'
+import ProtectedRoute from './components/ProtectedRoute'
 
 const App = () => {
   return (
@@ -17,9 +18,9 @@ const App = () => {
         <div className='pt-20 h-[100dvh] flex flex-col justify-between'>
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/friends-secret" element={<ProtectedRoute><FriendSecrets /></ProtectedRoute>} />
             <Route path="/team" element={<Team />} />
-            <Route path="/friends-secret" element={<FriendSecrets />} />
             <Route path="/*" element={<ErrorPage />} />
           </Routes>
 

@@ -67,7 +67,7 @@ const Home = () => {
 
           {/* Divider */}
           <div className="hidden lg:flex items-center justify-center">
-            <div className="h-[500px] min-h-[1em] w-px bg-gradient-to-tr from-transparent via-neutral-500 to-transparent opacity-25 dark:via-neutral-400"></div>
+            <div className="h-full w-px bg-gradient-to-tr from-transparent via-neutral-500 to-transparent opacity-25 dark:via-neutral-400"></div>
           </div>
 
           {/* Friends List Section */}

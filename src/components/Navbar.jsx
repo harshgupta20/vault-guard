@@ -13,7 +13,7 @@ import {
 
 const Navbar = () => {
     return (
-        <nav className='flex items-center justify-between p-4 h-full bg-background/95 backdrop-blur-sm border border-border rounded-lg shadow-lg ml-50 w-6xl mx-4 mt-4'>
+        <nav className='fixed top-4 left-4 right-4 z-50 flex items-center justify-between p-4 bg-background/95 backdrop-blur-sm border border-border rounded-lg shadow-lg'>
             {/* Hamburger Menu */}
             <Sheet className="rounded-sm">
                 <SheetTrigger asChild>

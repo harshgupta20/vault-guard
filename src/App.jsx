@@ -12,11 +12,9 @@ const App = () => {
   return (
     <>
       <div className='h-[100dvh]'>
-        <div className='h-[10dvh]'>
-          <Navbar />
-        </div>
+        <Navbar />
 
-        <div className='h-[90dvh] flex flex-col justify-between'>
+        <div className='pt-20 h-[100dvh] flex flex-col justify-between'>
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/dashboard" element={<Dashboard />} />

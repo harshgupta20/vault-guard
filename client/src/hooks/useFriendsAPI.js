@@ -19,7 +19,7 @@ export const useFriendsAPI = (publicAddress) => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to fetch friends");
+        throw new Error(errorData.message || "Failed to fetch friends");
       }
 
       const data = await response.json();
@@ -28,12 +28,12 @@ export const useFriendsAPI = (publicAddress) => {
         // Transform API data to match frontend structure
         const transformedFriends = data.data.friends.map((friend) => ({
           id: friend.id,
-          name: friend.name,
-          email: friend.email,
+          name: friend.friendName,
+          email: friend.friendEmail,
           publicAddress: friend.publicAddress,
-          walletAddress: friend.walletAddress,
-          addedAt: friend.addedAt,
-          avatarColor: generateAvatarColor(friend.name),
+          walletAddress: friend.friendWalletAddress,
+          addedAt: friend.createdAt,
+          avatarColor: generateAvatarColor(friend.friendName),
         }));
 
         setFriends(transformedFriends);
@@ -55,17 +55,25 @@ export const useFriendsAPI = (publicAddress) => {
     setError(null);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/friends`, {
+      // Transform data to match server expectations
+      const serverData = {
+        publicAddress: friendData.publicAddress,
+        friendName: friendData.name,
+        friendEmail: friendData.email,
+        friendWalletAddress: friendData.walletAddress,
+      };
+
+      const response = await fetch(`${API_BASE_URL}/friends`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(friendData),
+        body: JSON.stringify(serverData),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to add friend");
+        throw new Error(errorData.message || "Failed to add friend");
       }
 
       const data = await response.json();
@@ -73,12 +81,12 @@ export const useFriendsAPI = (publicAddress) => {
       if (data.success && data.data) {
         const newFriend = {
           id: data.data.id,
-          name: data.data.name,
-          email: data.data.email,
+          name: data.data.friendName,
+          email: data.data.friendEmail,
           publicAddress: data.data.publicAddress,
-          walletAddress: data.data.walletAddress,
+          walletAddress: data.data.friendWalletAddress,
           addedAt: data.data.createdAt,
-          avatarColor: generateAvatarColor(data.data.name),
+          avatarColor: generateAvatarColor(data.data.friendName),
         };
 
         setFriends((prevFriends) => [...prevFriends, newFriend]);

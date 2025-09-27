@@ -3,9 +3,10 @@ import { CreditCard, Lock, TrendingUp, FileText, Shield, Key } from 'lucide-reac
 import { useWallet } from '../hooks/useWallet';
 
 const SecretsList = () => {
-  const { account, isConnected } = useWallet();
+  const { account, signer, isConnected } = useWallet();
   const [wills, setWills] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
+  const [pingingWills, setPingingWills] = React.useState(new Set());
 
   useEffect(() => {
     async function fetchWills() {
@@ -16,6 +17,7 @@ const SecretsList = () => {
           console.log('Fetched wills:', JSON.stringify(data, null, 2));
 
           const structuredWills = data.data.wills.map((will, index) => ({
+            tokenId: will.tokenId,
             id: will.id || index,
             expiration: will.deadline?.timestamp || 'Not set',
             nominees: will.nominees || [],
@@ -78,6 +80,84 @@ const SecretsList = () => {
     };
   }
 
+  const handlePing = async (will) => {
+    if (!account || !window.ethereum) {
+      alert('Please connect your wallet first');
+      return;
+    }
+
+    setPingingWills(prev => new Set([...prev, will.tokenId]));
+
+    try {
+      // Prepare the ping transaction
+      const response = await fetch('https://eth-global-api.vercel.app/api/ping', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userAddress: account,
+          tokenId: will.tokenId
+        })
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to prepare ping transaction');
+      }
+
+      // Sign and send the transaction using signer (MetaMask approach)
+      console.log("🔄 Signing and sending ping transaction...", result.data.unsignedTransaction);
+      
+      if (!signer) {
+        throw new Error("No signer available");
+      }
+
+      // Use sendTransaction for MetaMask compatibility
+      const txResponse = await signer.sendTransaction(result.data.unsignedTransaction);
+      
+      console.log("✅ Ping transaction sent successfully:", txResponse.hash);
+
+      // Wait for confirmation
+      console.log("⏳ Waiting for transaction confirmation...");
+      const receipt = await txResponse.wait();
+      
+      console.log("✅ Ping transaction confirmed:", receipt);
+
+      alert(`Ping successful! Transaction: ${txResponse.hash}\nYour will deadline has been extended.`);
+
+      // Refresh the wills list after successful ping
+      setTimeout(() => {
+        window.location.reload(); // Simple refresh - in production you'd want to refetch data
+      }, 2000);
+
+    } catch (error) {
+      console.error('Error pinging will:', error);
+      
+      let errorMessage = 'Failed to ping will. ';
+      if (error.message.includes('You do not own this will')) {
+        errorMessage = 'You do not own this will.';
+      } else if (error.message.includes('Cannot ping a triggered will')) {
+        errorMessage = 'Cannot ping a triggered will.';
+      } else if (error.message.includes('Cannot ping an executed will')) {
+        errorMessage = 'Cannot ping an executed will.';
+      } else if (error.message.includes('User rejected')) {
+        errorMessage = 'Transaction was cancelled.';
+      } else {
+        errorMessage += error.message;
+      }
+      
+      alert(errorMessage);
+    } finally {
+      setPingingWills(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(will.tokenId);
+        return newSet;
+      });
+    }
+  }
+
   return (
     <div className="flex-1 lg:w-2/3">
       <h2 className="text-2xl font-bold text-card-foreground mb-6">Your Data</h2>
@@ -113,9 +193,24 @@ const SecretsList = () => {
                   <p className="text-muted-foreground">
                     <strong>Nominees:</strong> <span className="break-words">{will.nominees.length > 0 ? will.nominees.join(', ') : 'None specified'}</span>
                   </p>
-                  <p className="text-muted-foreground text-sm">
-                    <strong>Encrypted Data:</strong> {will.encryptedData ? 'Available' : 'Not available'}
-                  </p>
+                  <div className="mt-3 pt-2 border-t border-border">
+                    <button
+                      onClick={() => handlePing(will)}
+                      disabled={pingingWills.has(will.tokenId) || will.expiration === 'Not set'}
+                      className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                        will.expiration === 'Not set'
+                          ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                          : pingingWills.has(will.tokenId)
+                          ? 'bg-blue-300 text-blue-700 cursor-not-allowed'
+                          : 'bg-blue-500 hover:bg-blue-600 text-white'
+                      }`}
+                    >
+                      {pingingWills.has(will.tokenId) ? 'Pinging...' : 'Ping Will 📡'}
+                    </button>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Ping to extend deadline and prove you're alive
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>

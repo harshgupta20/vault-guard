@@ -1,0 +1,7 @@
+[submodule "backend/eth-global-api"]
+    path = backend/eth-global-api
+    url = https://github.com/nelsonksh/eth-global-api.git
+
+[submodule "contracts/VaultGuard"]
+    path = contracts/VaultGuard
+    url = https://github.com/Shachindra/VaultGuard.git

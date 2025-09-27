@@ -72,7 +72,7 @@ const Home = () => {
 
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Your Secrets Section */}
-          <SecretsList secrets={secrets} />
+          <SecretsList />
 
           {/* Divider */}
           <div className="hidden lg:flex items-center justify-center">

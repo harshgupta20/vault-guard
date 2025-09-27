@@ -27,9 +27,9 @@ const Home = () => {
 
   // Dummy friends data
   const dummyFriends = [
-    // { id: 1, name: "Alice Johnson", email: "alice@example.com" },
-    // { id: 2, name: "Bob Smith", email: "bob@example.com" },
-    // { id: 3, name: "Carol Davis", email: "carol@example.com" }
+    { id: 1, name: "Alice Johnson", email: "alice@example.com" },
+    { id: 2, name: "Bob Smith", email: "bob@example.com" },
+    { id: 3, name: "Carol Davis", email: "carol@example.com" }
   ]
 
   return (
@@ -53,7 +53,7 @@ const Home = () => {
               <h2 className="text-2xl font-bold text-card-foreground mb-6">Your Secrets</h2>
               <div className="space-y-4">
                 {dummySecrets.length ? dummySecrets.map((secret) => (
-                  <div key={secret.id} className="bg-background border border-border rounded-md p-4 hover:bg-accent/50 transition-colors">
+                  <div key={secret.id} className="bg-background border border-border rounded-md p-4 hover:p-6 transition-all duration-300 ease-in-out">
                     <div className="flex justify-between items-start mb-2">
                       <h3 className="text-lg font-semibold text-foreground">{secret.title}</h3>
                       <span className="text-sm text-muted-foreground">{secret.date}</span>
@@ -73,14 +73,14 @@ const Home = () => {
           <div className="flex-1 lg:w-1/3">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold text-card-foreground">Friends List</h2>
-                <Button variant="outline" size="sm" className="text-primary border-primary hover:bg-primary hover:text-primary-foreground">
+                <Button variant="outline" size="sm" className="text-primary border-primary  hover:text-primary-foreground">
                   <Plus className="h-4 w-4 mr-1" />
                   Add
                 </Button>
               </div>
               <div className="space-y-3">
                 {dummyFriends.length ? dummyFriends.map((friend) => (
-                  <div key={friend.id} className="bg-background border border-border rounded-md p-4 hover:bg-accent/50 transition-colors">
+                  <div key={friend.id} className="bg-background border border-border rounded-md p-4 hover:p-6 transition-all duration-300 ease-in-out">
                     <h4 className="font-medium text-foreground">{friend.name}</h4>
                     <p className="text-sm text-muted-foreground">{friend.email}</p>
                   </div>

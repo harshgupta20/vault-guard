@@ -5,8 +5,7 @@ import SecretsList from "../components/SecretsList";
 import FriendsList from "../components/FriendsList";
 import CreateSecretForm from "../components/CreateSecretForm";
 import { useWallet } from "../hooks/useWallet";
-import { useFriendsAPI } from "../hooks/useFriendsAPI";
-
+const API_BASE_URL = "http://localhost:3000";
 const Home = () => {
   // Wallet connection
   const { account, isConnected } = useWallet();
@@ -46,24 +45,6 @@ const Home = () => {
     },
   ]);
 
-  const handleAddFriend = async (friendData) => {
-    if (!account) {
-      console.error("No wallet connected");
-      return;
-    }
-
-    const result = await addFriend({
-      ...friendData,
-      publicAddress: account,
-    });
-
-    if (result.success) {
-      console.log("Friend added successfully:", result.data);
-    } else {
-      console.error("Failed to add friend:", result.error);
-    }
-  };
-
   const handleAddSecret = (newSecret) => {
     setSecrets((prevSecrets) => [...prevSecrets, newSecret]);
   };
@@ -99,11 +80,7 @@ const Home = () => {
           </div>
 
           {/* Friends List Section */}
-          <FriendsList
-            onAddFriend={handleAddFriend}
-            isConnected={isConnected}
-            account={account}
-          />
+          <FriendsList isConnected={isConnected} account={account} />
         </div>
       </div>
     </div>

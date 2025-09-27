@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
 import AddFriendForm from "./AddFriendForm";
-import { Loader2, AlertCircle, CloudCog } from "lucide-react";
+import { Loader2, AlertCircle, CloudCog, Plus } from "lucide-react";
+import { Button } from "./ui/button";
+import { useFriendsAPI } from "../hooks/useFriendsAPI";
 const API_BASE_URL = "http://localhost:3000";
-const FriendsList = ({ onAddFriend, isConnected = false }) => {
+const FriendsList = ({ isConnected = false }) => {
   // Friends API integration
   // const {
   //   friends,
@@ -14,6 +16,8 @@ const FriendsList = ({ onAddFriend, isConnected = false }) => {
   const [friends, setFriends] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  const [showAddFriendForm, setShowAddFriendForm] = useState(false);
 
   const getFriendsList = async () => {
     try {
@@ -29,6 +33,60 @@ const FriendsList = ({ onAddFriend, isConnected = false }) => {
       setLoading(false);
     }
   };
+  const handleAddFriend = async (friendData) => {
+    if (!localStorage.getItem("walletAddress")) {
+      console.error("No wallet connected");
+      return;
+    }
+
+    try {
+      // Transform data to match server expectations
+      const serverData = {
+        publicAddress: localStorage.getItem("walletAddress"),
+        friendName: friendData.name,
+        friendEmail: friendData.email,
+        friendWalletAddress: friendData.walletAddress,
+      };
+
+      const response = await fetch(`${API_BASE_URL}/friends`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(serverData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to add friend");
+      }
+
+      const data = await response.json();
+
+      if (data.success && data.data) {
+        const newFriend = {
+          id: data.data.id,
+          name: data.data.friendName,
+          email: data.data.friendEmail,
+          publicAddress: data.data.publicAddress,
+          walletAddress: data.data.friendWalletAddress,
+          addedAt: data.data.createdAt,
+          avatarColor: useFriendsAPI().generateAvatarColor(
+            data.data.friendName
+          ),
+        };
+
+        setFriends((prevFriends) => [...prevFriends, newFriend]);
+        return { success: true, data: newFriend, message: data.message };
+      }
+    } catch (err) {
+      console.error("Error adding friend:", err);
+      // setError(err.message);
+      return { success: false, message: err.message };
+    } finally {
+      // setLoading(false);
+    }
+  };
 
   console.log("friends", friends);
 
@@ -42,7 +100,23 @@ const FriendsList = ({ onAddFriend, isConnected = false }) => {
         <h2 className="text-2xl font-bold text-card-foreground">
           Friends List
         </h2>
-        <AddFriendForm onAddFriend={onAddFriend} disabled={!isConnected} />
+        {showAddFriendForm && (
+          <AddFriendForm
+            onAddFriend={handleAddFriend}
+            disabled={!isConnected}
+            setShowAddFriendForm={setShowAddFriendForm}
+            showAddFriendForm={showAddFriendForm}
+          />
+        )}
+        <Button
+          variant="outline"
+          size="sm"
+          className="text-primary border-primary hover:text-primary-foreground"
+          onClick={() => setShowAddFriendForm(true)}
+        >
+          <Plus className="h-4 w-4 mr-1" />
+          Add
+        </Button>
       </div>
 
       {/* Error State */}

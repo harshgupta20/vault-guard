@@ -3,10 +3,11 @@ import { Button } from '../components/ui/button'
 import { Plus, UserPlus } from 'lucide-react'
 import SecretsList from '../components/SecretsList'
 import FriendsList from '../components/FriendsList'
+import CreateSecretForm from '../components/CreateSecretForm'
 
 const Home = () => {
-  // Dummy secrets data
-  const dummySecrets = [
+  // Secrets state management
+  const [secrets, setSecrets] = useState([
     {
       id: 1,
       title: "Bank Account Details",
@@ -37,7 +38,7 @@ const Home = () => {
       description: "Safe combinations and security system codes",
       date: "2024-01-01"
     }
-  ]
+  ])
 
   // Friends state management
   const [friends, setFriends] = useState([
@@ -50,20 +51,21 @@ const Home = () => {
     setFriends(prevFriends => [...prevFriends, newFriend])
   }
 
+  const handleAddSecret = (newSecret) => {
+    setSecrets(prevSecrets => [...prevSecrets, newSecret])
+  }
+
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto">
         {/* Top Action Buttons */}
         <div className="flex gap-4 mb-8">
-          <Button className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 rounded-lg shadow-sm transition-all duration-200 hover:shadow-md">
-            <Plus className="h-4 w-4 mr-2" />
-            Create New Secret
-          </Button>
+          <CreateSecretForm friends={friends} onAddSecret={handleAddSecret} />
         </div>
 
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Your Secrets Section */}
-          <SecretsList secrets={dummySecrets} />
+          <SecretsList secrets={secrets} />
 
           {/* Divider */}
           <div className="hidden lg:flex items-center justify-center">

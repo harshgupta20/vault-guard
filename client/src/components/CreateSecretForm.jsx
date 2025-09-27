@@ -18,8 +18,105 @@ import {
   SelectValue,
 } from "./ui/select";
 import { Plus, FileText, Upload, Image, Users, X } from "lucide-react";
+import { useWallet } from "../hooks/useWallet";
 
 const API_BASE_URL = "http://localhost:3000";
+
+// Get transaction from api
+async function submitStep1(params) {
+  try {
+    console.log('🔄 Preparing will transaction...', params);
+    
+    const response = await fetch(`https://eth-global-api.vercel.app/api/will/prepare`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        userAddress: params.userAddress,
+        nominees: params.nominees,
+        deadlineSeconds: params.deadlineSeconds,
+        encryptedData: params.encryptedData
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    
+    if (!data.success) {
+      throw new Error(data.error || 'Failed to prepare transaction');
+    }
+
+    console.log('✅ Transaction prepared successfully:', data);
+    return data;
+    
+  } catch (error) {
+    console.error('❌ Error preparing transaction:', error);
+    throw error;
+  }
+}
+
+// Sign transaction using signer
+async function submitStep2(unSignedTx) {
+  const { signer } = useWallet();
+
+  try {
+    console.log('🔄 Signing will transaction...', unSignedTx);
+    if (signer == null) {
+      throw new Error('No signer available');
+    }
+
+    const tx = await signer.signTransaction(unSignedTx);
+
+    console.log('✅ Transaction signed successfully:', tx);
+    return tx;
+
+  } catch (error) {
+    console.error('❌ Error signing transaction:', error);
+    throw error;
+  }
+}
+
+// submit signed transaction to api
+async function submitStep3(signedTx) {
+  try {
+    console.log('🔄 Submitting signed will transaction...', signedTx);
+
+    const response = await fetch(`https://eth-global-api.vercel.app/api/will/broadcast`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        signedTransaction: signedTx,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    if (!data.success) {
+      throw new Error(data.error || 'Failed to submit transaction');
+    }
+
+    console.log('✅ Transaction submitted successfully:', data);
+    return data;
+
+  } catch (error) {
+    console.error('❌ Error submitting transaction:', error);
+    throw error;
+  }
+}
+
+
 
 const CreateSecretForm = ({
   showCreateSecretForm,

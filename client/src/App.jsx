@@ -1,34 +1,48 @@
-import React from 'react'
-import { Route, Routes } from 'react-router'
-import Home from './pages/Home'
-import Dashboard from './pages/Dashboard'
-import Team from './pages/Team'
-import ErrorPage from './pages/ErrorPage'
-import Navbar from './components/Navbar'
-import FriendSecrets from './pages/FriendSecrets'
-import Footer from './components/Footer'
-import ProtectedRoute from './components/ProtectedRoute'
+import React from "react";
+import { Route, Routes } from "react-router";
+import Home from "./pages/Home";
+import Dashboard from "./pages/Dashboard";
+import Team from "./pages/Team";
+import ErrorPage from "./pages/ErrorPage";
+import Navbar from "./components/Navbar";
+import FriendSecrets from "./pages/FriendSecrets";
+import Footer from "./components/Footer";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 const App = () => {
   return (
     <>
-      <div className='h-[100dvh]'>
+      <div className="min-h-screen flex flex-col">
         <Navbar />
 
-        <div className='pt-20 h-[100dvh] flex flex-col justify-between'>
+        <main className="pt-20 flex-1">
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-            <Route path="/friends-secret" element={<ProtectedRoute><FriendSecrets /></ProtectedRoute>} />
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/friends-secret"
+              element={
+                <ProtectedRoute>
+                  <FriendSecrets />
+                </ProtectedRoute>
+              }
+            />
             <Route path="/team" element={<Team />} />
             <Route path="/*" element={<ErrorPage />} />
           </Routes>
+        </main>
 
-          <Footer />
-        </div>
+        <Footer />
       </div>
     </>
-  )
-}
+  );
+};
 
-export default App
+export default App;

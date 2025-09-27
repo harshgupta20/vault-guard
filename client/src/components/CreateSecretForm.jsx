@@ -25,37 +25,41 @@ const API_BASE_URL = "http://localhost:3000";
 // Get transaction from api
 async function submitStep1(params) {
   try {
-    console.log('🔄 Preparing will transaction...', params);
-    
-    const response = await fetch(`https://eth-global-api.vercel.app/api/will/prepare`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        userAddress: params.userAddress,
-        nominees: params.nominees,
-        deadlineSeconds: params.deadlineSeconds,
-        encryptedData: params.encryptedData
-      })
-    });
+    console.log("🔄 Preparing will transaction...", params);
+
+    const response = await fetch(
+      `https://eth-global-api.vercel.app/api/will/prepare`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userAddress: params.userAddress,
+          nominees: params.nominees,
+          deadlineSeconds: params.deadlineSeconds,
+          encryptedData: params.encryptedData,
+        }),
+      }
+    );
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      throw new Error(
+        errorData.error || `HTTP error! status: ${response.status}`
+      );
     }
 
     const data = await response.json();
-    
+
     if (!data.success) {
-      throw new Error(data.error || 'Failed to prepare transaction');
+      throw new Error(data.error || "Failed to prepare transaction");
     }
 
-    console.log('✅ Transaction prepared successfully:', data);
+    console.log("✅ Transaction prepared successfully:", data);
     return data;
-    
   } catch (error) {
-    console.error('❌ Error preparing transaction:', error);
+    console.error("❌ Error preparing transaction:", error);
     throw error;
   }
 }
@@ -65,18 +69,17 @@ async function submitStep2(unSignedTx) {
   const { signer } = useWallet();
 
   try {
-    console.log('🔄 Signing will transaction...', unSignedTx);
+    console.log("🔄 Signing will transaction...", unSignedTx);
     if (signer == null) {
-      throw new Error('No signer available');
+      throw new Error("No signer available");
     }
 
     const tx = await signer.signTransaction(unSignedTx);
 
-    console.log('✅ Transaction signed successfully:', tx);
+    console.log("✅ Transaction signed successfully:", tx);
     return tx;
-
   } catch (error) {
-    console.error('❌ Error signing transaction:', error);
+    console.error("❌ Error signing transaction:", error);
     throw error;
   }
 }
@@ -84,39 +87,41 @@ async function submitStep2(unSignedTx) {
 // submit signed transaction to api
 async function submitStep3(signedTx) {
   try {
-    console.log('🔄 Submitting signed will transaction...', signedTx);
+    console.log("🔄 Submitting signed will transaction...", signedTx);
 
-    const response = await fetch(`https://eth-global-api.vercel.app/api/will/broadcast`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        signedTransaction: signedTx,
-      }),
-    });
+    const response = await fetch(
+      `https://eth-global-api.vercel.app/api/will/broadcast`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          signedTransaction: signedTx,
+        }),
+      }
+    );
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      throw new Error(
+        errorData.error || `HTTP error! status: ${response.status}`
+      );
     }
 
     const data = await response.json();
 
     if (!data.success) {
-      throw new Error(data.error || 'Failed to submit transaction');
+      throw new Error(data.error || "Failed to submit transaction");
     }
 
-    console.log('✅ Transaction submitted successfully:', data);
+    console.log("✅ Transaction submitted successfully:", data);
     return data;
-
   } catch (error) {
-    console.error('❌ Error submitting transaction:', error);
+    console.error("❌ Error submitting transaction:", error);
     throw error;
   }
 }
-
-
 
 const CreateSecretForm = ({
   showCreateSecretForm,
@@ -249,12 +254,16 @@ const CreateSecretForm = ({
     }
   };
 
-  const handleFriendSelect = (friendId) => {
-    const friend = friends.find((f) => f.id === parseInt(friendId));
+  const handleFriendSelect = (friendWalletAddress) => {
+    const friend = friends.find(
+      (f) => f.friendWalletAddress === friendWalletAddress
+    );
     if (
       friend &&
       formData.selectedFriends.length < 3 &&
-      !formData.selectedFriends.find((f) => f.id === friend.id)
+      !formData.selectedFriends.find(
+        (f) => f.friendWalletAddress === friend.friendWalletAddress
+      )
     ) {
       setFormData((prev) => ({
         ...prev,
@@ -266,10 +275,12 @@ const CreateSecretForm = ({
     }
   };
 
-  const removeFriend = (friendId) => {
+  const removeFriend = (friendWalletAddress) => {
     setFormData((prev) => ({
       ...prev,
-      selectedFriends: prev.selectedFriends.filter((f) => f.id !== friendId),
+      selectedFriends: prev.selectedFriends.filter(
+        (f) => f.friendWalletAddress !== friendWalletAddress
+      ),
     }));
   };
 
@@ -426,13 +437,13 @@ const CreateSecretForm = ({
                 <div className="flex flex-wrap gap-2 mb-2">
                   {formData.selectedFriends.map((friend) => (
                     <div
-                      key={friend.id}
+                      key={friend.friendWalletAddress}
                       className="flex items-center gap-2 bg-primary/10 text-primary px-3 py-1 rounded-full text-sm"
                     >
-                      <span>{friend.name}</span>
+                      <span>{friend.friendName}</span>
                       <button
                         type="button"
-                        onClick={() => removeFriend(friend.id)}
+                        onClick={() => removeFriend(friend.friendWalletAddress)}
                         className="hover:bg-primary/20 rounded-full p-1"
                       >
                         <X className="h-3 w-3" />
@@ -442,7 +453,10 @@ const CreateSecretForm = ({
                 </div>
               )}
               {formData.selectedFriends.length < 3 && (
-                <Select onValueChange={handleFriendSelect}>
+                <Select
+                  key={formData.selectedFriends.length}
+                  onValueChange={handleFriendSelect}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Select friends to share with..." />
                   </SelectTrigger>

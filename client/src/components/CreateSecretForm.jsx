@@ -25,37 +25,41 @@ const API_BASE_URL = "http://localhost:3000";
 // Get transaction from api
 async function submitStep1(params) {
   try {
-    console.log('🔄 Preparing will transaction...', params);
-    
-    const response = await fetch(`https://eth-global-api.vercel.app/api/will/prepare`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        userAddress: params.userAddress,
-        nominees: params.nominees,
-        deadlineSeconds: params.deadlineSeconds,
-        encryptedData: params.encryptedData
-      })
-    });
+    console.log("🔄 Preparing will transaction...", params);
+
+    const response = await fetch(
+      `https://eth-global-api.vercel.app/api/will/prepare`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userAddress: params.userAddress,
+          nominees: params.nominees,
+          deadlineSeconds: params.deadlineSeconds,
+          encryptedData: params.encryptedData,
+        }),
+      }
+    );
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      throw new Error(
+        errorData.error || `HTTP error! status: ${response.status}`
+      );
     }
 
     const data = await response.json();
-    
+
     if (!data.success) {
-      throw new Error(data.error || 'Failed to prepare transaction');
+      throw new Error(data.error || "Failed to prepare transaction");
     }
 
-    console.log('✅ Transaction prepared successfully:', data);
+    console.log("✅ Transaction prepared successfully:", data);
     return data;
-    
   } catch (error) {
-    console.error('❌ Error preparing transaction:', error);
+    console.error("❌ Error preparing transaction:", error);
     throw error;
   }
 }
@@ -63,29 +67,28 @@ async function submitStep1(params) {
 // Sign and send transaction using signer (MetaMask approach)
 async function submitStep2(unSignedTx, signer) {
   try {
-    console.log('🔄 Signing and sending will transaction...', unSignedTx);
+    console.log("🔄 Signing and sending will transaction...", unSignedTx);
     if (signer == null) {
-      throw new Error('No signer available');
+      throw new Error("No signer available");
     }
 
     // Use sendTransaction instead of signTransaction for MetaMask compatibility
     const txResponse = await signer.sendTransaction(unSignedTx);
-    
-    console.log('✅ Transaction sent successfully:', txResponse.hash);
-    
+
+    console.log("✅ Transaction sent successfully:", txResponse.hash);
+
     // Wait for confirmation
-    console.log('⏳ Waiting for transaction confirmation...');
+    console.log("⏳ Waiting for transaction confirmation...");
     const receipt = await txResponse.wait();
-    
-    console.log('✅ Transaction confirmed:', receipt);
-    
+
+    console.log("✅ Transaction confirmed:", receipt);
+
     return {
       hash: txResponse.hash,
-      receipt: receipt
+      receipt: receipt,
     };
-
   } catch (error) {
-    console.error('❌ Error signing/sending transaction:', error);
+    console.error("❌ Error signing/sending transaction:", error);
     throw error;
   }
 }
@@ -93,39 +96,41 @@ async function submitStep2(unSignedTx, signer) {
 // submit signed transaction to api
 async function submitStep3(signedTx) {
   try {
-    console.log('🔄 Submitting signed will transaction...', signedTx);
+    console.log("🔄 Submitting signed will transaction...", signedTx);
 
-    const response = await fetch(`https://eth-global-api.vercel.app/api/will/broadcast`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        signedTransaction: signedTx,
-      }),
-    });
+    const response = await fetch(
+      `https://eth-global-api.vercel.app/api/will/broadcast`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          signedTransaction: signedTx,
+        }),
+      }
+    );
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      throw new Error(
+        errorData.error || `HTTP error! status: ${response.status}`
+      );
     }
 
     const data = await response.json();
 
     if (!data.success) {
-      throw new Error(data.error || 'Failed to submit transaction');
+      throw new Error(data.error || "Failed to submit transaction");
     }
 
-    console.log('✅ Transaction submitted successfully:', data);
+    console.log("✅ Transaction submitted successfully:", data);
     return data;
-
   } catch (error) {
-    console.error('❌ Error submitting transaction:', error);
+    console.error("❌ Error submitting transaction:", error);
     throw error;
   }
 }
-
-
 
 const CreateSecretForm = ({
   showCreateSecretForm,
@@ -509,30 +514,29 @@ const CreateSecretForm = ({
               className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground"
               onClick={async (e) => {
                 e.preventDefault(); // Prevent form submission
-                
+
                 try {
-                  console.log('🚀 Starting will creation process...');
-                  
+                  console.log("🚀 Starting will creation process...");
+
                   // Step 1: Prepare transaction
                   const unSignedTx = await submitStep1({
                     userAddress: account,
-                    nominees: [
-                      "0x0B80f1bf7ED4e33DD6AB6Ddbb4437fC3CE97F8A1"
-                    ],
+                    nominees: ["0x0B80f1bf7ED4e33DD6AB6Ddbb4437fC3CE97F8A1"],
                     deadlineSeconds: 30,
-                    encryptedData: "test-secret-data"
+                    encryptedData: "test-secret-data",
                   });
-                  
+
                   // Step 2: Sign and send transaction (MetaMask will handle both)
                   const transactionData = unSignedTx.data.transactionData;
                   const result = await submitStep2(transactionData, signer);
-                  
+
                   console.log("✅ Will created successfully!", result);
-                  alert(`Will created successfully! Transaction hash: ${result.hash}`);
-                  
+                  alert(
+                    `Will created successfully! Transaction hash: ${result.hash}`
+                  );
+
                   // Close the dialog on success
                   setShowCreateSecretForm(false);
-                  
                 } catch (error) {
                   console.error("❌ Error creating will:", error);
                   alert("Error creating will: " + error.message);

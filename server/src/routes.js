@@ -8,29 +8,52 @@ module.exports = (prisma) => {
   // POST /users
   router.post("/users", async (req, res) => {
     const { publicAddress } = req.body;
-    if (!publicAddress)
-      return res.status(400).json({ error: "publicAddress is required" });
+
+    if (!publicAddress) {
+      return res.status(400).json({
+        success: false,
+        message: "publicAddress is required",
+        data: {},
+      });
+    }
+
     if (!isValidWalletAddress(publicAddress)) {
-      return res
-        .status(400)
-        .json({ error: "publicAddress is not a valid wallet address format" });
+      return res.status(400).json({
+        success: false,
+        message: "publicAddress is not a valid wallet address format",
+        data: {},
+      });
     }
 
     try {
       const user = await prisma.user.create({
         data: { publicAddress },
       });
-      return res.status(201).json(user);
+
+      return res.status(201).json({
+        success: true,
+        message: "User created successfully",
+        data: user,
+      });
     } catch (err) {
       // unique conflict
       if (
         err instanceof Prisma.PrismaClientKnownRequestError &&
         err.code === "P2002"
       ) {
-        return res.status(409).json({ error: "User already exists" });
+        return res.status(400).json({
+          success: false,
+          message: "User already exists",
+          data: {},
+        });
       }
+
       console.error(err);
-      return res.status(500).json({ error: "Internal server error" });
+      return res.status(500).json({
+        success: false,
+        message: "Internal server error",
+        data: {},
+      });
     }
   });
 
@@ -45,29 +68,38 @@ module.exports = (prisma) => {
       "friendWalletAddress",
     ]);
     if (missing.length) {
-      return res
-        .status(400)
-        .json({ error: "Missing required fields", missing });
+      return res.status(400).json({
+        success: false,
+        message: "Missing required fields",
+        data: { missing },
+      });
     }
 
     if (!isValidWalletAddress(publicAddress)) {
-      return res.status(400).json({ error: "publicAddress is not valid" });
+      return res.status(400).json({
+        success: false,
+        message: "publicAddress is not valid",
+        data: {},
+      });
     }
+
     if (!isValidWalletAddress(friendWalletAddress)) {
-      return res
-        .status(400)
-        .json({ error: "friendWalletAddress is not valid" });
+      return res.status(400).json({
+        success: false,
+        message: "friendWalletAddress is not valid",
+        data: {},
+      });
     }
 
     try {
       // Ensure user exists
       const owner = await prisma.user.findUnique({ where: { publicAddress } });
       if (!owner) {
-        return res
-          .status(400)
-          .json({
-            error: "Owner (publicAddress) does not exist. Create user first.",
-          });
+        return res.status(400).json({
+          success: false,
+          message: "Owner (publicAddress) does not exist. Create user first.",
+          data: {},
+        });
       }
 
       const friend = await prisma.friend.create({
@@ -79,31 +111,52 @@ module.exports = (prisma) => {
         },
       });
 
-      return res.status(201).json(friend);
+      return res.status(201).json({
+        success: true,
+        message: "Friend added successfully",
+        data: friend,
+      });
     } catch (err) {
       if (
         err instanceof Prisma.PrismaClientKnownRequestError &&
         err.code === "P2002"
       ) {
         // Unique constraint failed on the composite id (duplicate friend for this owner)
-        return res
-          .status(409)
-          .json({ error: "Friend already exists for this publicAddress" });
+        return res.status(409).json({
+          success: false,
+          message: "Friend already exists for this publicAddress",
+          data: {},
+        });
       }
+
       console.error(err);
-      return res.status(500).json({ error: "Internal server error" });
+      return res.status(500).json({
+        success: false,
+        message: "Internal server error",
+        data: {},
+      });
     }
   });
 
   // GET /friends?publicAddress=0x...
-  router.get("/friends", async (req, res) => {
-    const publicAddress = req.query.publicAddress;
-    if (!publicAddress)
-      return res
-        .status(400)
-        .json({ error: "publicAddress query param is required" });
+  // GET /friends/:publicAddress
+  router.get("/friends/:publicAddress", async (req, res) => {
+    const { publicAddress } = req.params;
+
+    if (!publicAddress) {
+      return res.status(400).json({
+        success: false,
+        message: "publicAddress param is required",
+        data: {},
+      });
+    }
+
     if (!isValidWalletAddress(publicAddress)) {
-      return res.status(400).json({ error: "publicAddress is not valid" });
+      return res.status(400).json({
+        success: false,
+        message: "publicAddress is not valid",
+        data: {},
+      });
     }
 
     try {
@@ -111,10 +164,19 @@ module.exports = (prisma) => {
         where: { publicAddress },
         orderBy: { createdAt: "desc" },
       });
-      return res.json(friends);
+
+      return res.json({
+        success: true,
+        message: "Friends fetched successfully",
+        data: { friends },
+      });
     } catch (err) {
       console.error(err);
-      return res.status(500).json({ error: "Internal server error" });
+      return res.status(500).json({
+        success: false,
+        message: "Internal server error",
+        data: {},
+      });
     }
   });
 

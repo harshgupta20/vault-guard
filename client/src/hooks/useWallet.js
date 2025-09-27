@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { ethers } from "ethers";
+import { useUserAPI } from "./useUserAPI";
 
 export const useWallet = () => {
   const [account, setAccount] = useState(null);
@@ -8,6 +9,9 @@ export const useWallet = () => {
   const [isConnected, setIsConnected] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState(null);
+
+  // User API hook for creating users
+  const { createUser, isCreatingUser } = useUserAPI();
 
   // Check if MetaMask is installed
   const isMetaMaskInstalled = () => {
@@ -49,6 +53,25 @@ export const useWallet = () => {
         // Store connection state in localStorage
         localStorage.setItem("walletConnected", "true");
         localStorage.setItem("walletAddress", address);
+
+        // Create user in database
+        try {
+          const userResult = await createUser(address);
+          if (userResult.success) {
+            console.log(
+              "User created/verified in database:",
+              userResult.message
+            );
+          } else {
+            console.warn(
+              "Failed to create user in database:",
+              userResult.error
+            );
+          }
+        } catch (userError) {
+          console.error("Error creating user:", userError);
+          // Don't fail the wallet connection if user creation fails
+        }
 
         return true;
       }
@@ -144,6 +167,25 @@ export const useWallet = () => {
             setProvider(provider);
             setSigner(signer);
             setIsConnected(true);
+
+            // Create user in database if not already created
+            try {
+              const userResult = await createUser(address);
+              if (userResult.success) {
+                console.log(
+                  "User created/verified in database:",
+                  userResult.message
+                );
+              } else {
+                console.warn(
+                  "Failed to create user in database:",
+                  userResult.error
+                );
+              }
+            } catch (userError) {
+              console.error("Error creating user:", userError);
+              // Don't fail the wallet connection if user creation fails
+            }
           } else {
             // Clear invalid connection state
             localStorage.removeItem("walletConnected");
@@ -165,7 +207,7 @@ export const useWallet = () => {
     provider,
     signer,
     isConnected,
-    isConnecting,
+    isConnecting: isConnecting || isCreatingUser,
     error,
     connectWallet,
     disconnectWallet,

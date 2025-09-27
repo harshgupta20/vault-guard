@@ -4,8 +4,16 @@ import { Plus, UserPlus } from 'lucide-react'
 import SecretsList from '../components/SecretsList'
 import FriendsList from '../components/FriendsList'
 import CreateSecretForm from '../components/CreateSecretForm'
+import { useWallet } from '../hooks/useWallet'
+import { useFriendsAPI } from '../hooks/useFriendsAPI'
 
 const Home = () => {
+  // Wallet connection
+  const { account, isConnected } = useWallet();
+  
+  // Friends API integration
+  const { friends, loading: friendsLoading, error: friendsError, addFriend } = useFriendsAPI(account);
+
   // Secrets state management
   const [secrets, setSecrets] = useState([
     {
@@ -40,15 +48,22 @@ const Home = () => {
     }
   ])
 
-  // Friends state management
-  const [friends, setFriends] = useState([
-    { id: 1, name: "Alice Johnson", email: "alice@example.com", avatarColor: "from-blue-400 to-purple-500" },
-    { id: 2, name: "Bob Smith", email: "bob@example.com", avatarColor: "from-green-400 to-blue-500" },
-    { id: 3, name: "Carol Davis", email: "carol@example.com", avatarColor: "from-pink-400 to-red-500" }
-  ])
+  const handleAddFriend = async (friendData) => {
+    if (!account) {
+      console.error('No wallet connected');
+      return;
+    }
 
-  const handleAddFriend = (newFriend) => {
-    setFriends(prevFriends => [...prevFriends, newFriend])
+    const result = await addFriend({
+      ...friendData,
+      publicAddress: account
+    });
+
+    if (result.success) {
+      console.log('Friend added successfully:', result.data);
+    } else {
+      console.error('Failed to add friend:', result.error);
+    }
   }
 
   const handleAddSecret = (newSecret) => {
@@ -73,7 +88,13 @@ const Home = () => {
           </div>
 
           {/* Friends List Section */}
-          <FriendsList friends={friends} onAddFriend={handleAddFriend} />
+          <FriendsList 
+            friends={friends} 
+            onAddFriend={handleAddFriend}
+            loading={friendsLoading}
+            error={friendsError}
+            isConnected={isConnected}
+          />
         </div>
       </div>
     </div>

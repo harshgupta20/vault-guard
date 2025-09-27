@@ -2,16 +2,18 @@ import React, { useState } from 'react'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog'
-import { Plus, UserPlus, Mail, Wallet } from 'lucide-react'
+import { Plus, UserPlus, Mail, Wallet, Loader2 } from 'lucide-react'
 
-const AddFriendForm = ({ onAddFriend }) => {
+const AddFriendForm = ({ onAddFriend, disabled = false }) => {
   const [isOpen, setIsOpen] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     walletAddress: ''
   })
   const [errors, setErrors] = useState({})
+  const [submitError, setSubmitError] = useState('')
 
   const validateForm = () => {
     const newErrors = {}
@@ -34,36 +36,31 @@ const AddFriendForm = ({ onAddFriend }) => {
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     
-    if (validateForm()) {
-      // Generate a random avatar color
-      const avatarColors = [
-        'from-blue-400 to-purple-500',
-        'from-green-400 to-blue-500',
-        'from-pink-400 to-red-500',
-        'from-yellow-400 to-orange-500',
-        'from-purple-400 to-pink-500',
-        'from-indigo-400 to-purple-500',
-        'from-teal-400 to-green-500',
-        'from-red-400 to-pink-500'
-      ]
-      
-      const newFriend = {
-        id: Date.now(), // Simple ID generation
+    if (!validateForm()) return
+    
+    setIsSubmitting(true)
+    setSubmitError('')
+    
+    try {
+      const friendData = {
         name: formData.name.trim(),
         email: formData.email.trim(),
-        walletAddress: formData.walletAddress.trim(),
-        avatarColor: avatarColors[Math.floor(Math.random() * avatarColors.length)]
+        walletAddress: formData.walletAddress.trim()
       }
       
-      onAddFriend(newFriend)
+      await onAddFriend(friendData)
       
-      // Reset form
+      // Reset form on success
       setFormData({ name: '', email: '', walletAddress: '' })
       setErrors({})
       setIsOpen(false)
+    } catch (error) {
+      setSubmitError(error.message || 'Failed to add friend')
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -78,7 +75,12 @@ const AddFriendForm = ({ onAddFriend }) => {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="text-primary border-primary hover:text-primary-foreground">
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="text-primary border-primary hover:text-primary-foreground"
+          disabled={disabled}
+        >
           <Plus className="h-4 w-4 mr-1" />
           Add
         </Button>
@@ -95,6 +97,13 @@ const AddFriendForm = ({ onAddFriend }) => {
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-6 mt-6">
+          {/* Submit Error */}
+          {submitError && (
+            <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
+              <p className="text-sm text-red-600 dark:text-red-400">{submitError}</p>
+            </div>
+          )}
+          
           <div className="space-y-4">
             {/* Name Field */}
             <div className="space-y-2">
@@ -169,9 +178,19 @@ const AddFriendForm = ({ onAddFriend }) => {
             <Button
               type="submit"
               className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground"
+              disabled={isSubmitting}
             >
-              <UserPlus className="h-4 w-4 mr-2" />
-              Add Friend
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Adding...
+                </>
+              ) : (
+                <>
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  Add Friend
+                </>
+              )}
             </Button>
           </DialogFooter>
         </form>

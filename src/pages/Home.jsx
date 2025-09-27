@@ -47,10 +47,9 @@ const Home = () => {
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="flex flex-col lg:flex-row gap-6">
           {/* Your Secrets Section */}
-          <div className="lg:col-span-2">
-            <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
+          <div className="flex-1 lg:w-2/3">
               <h2 className="text-2xl font-bold text-card-foreground mb-6">Your Secrets</h2>
               <div className="space-y-4">
                 {dummySecrets.length ? dummySecrets.map((secret) => (
@@ -62,13 +61,16 @@ const Home = () => {
                     <p className="text-muted-foreground">{secret.description}</p>
                   </div>
                 )) : <div className="text-muted-foreground">We know you got some secrets 😉</div>}
-              </div>
             </div>
           </div>
 
+          {/* Divider */}
+          <div className="hidden lg:flex items-center justify-center">
+            <div className="h-[500px] min-h-[1em] w-px bg-gradient-to-tr from-transparent via-neutral-500 to-transparent opacity-25 dark:via-neutral-400"></div>
+          </div>
+
           {/* Friends List Section */}
-          <div className="lg:col-span-1">
-            <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
+          <div className="flex-1 lg:w-1/3">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold text-card-foreground">Friend List</h2>
                 <Button variant="outline" size="sm" className="text-primary border-primary hover:bg-primary hover:text-primary-foreground">
@@ -78,14 +80,13 @@ const Home = () => {
               </div>
               <div className="space-y-3">
                 {dummyFriends.length ? dummyFriends.map((friend) => (
-                  <div key={friend.id} className="bg-background border border-border rounded-md p-3 hover:bg-accent/50 transition-colors">
+                  <div key={friend.id} className="bg-background border border-border rounded-md p-4 hover:bg-accent/50 transition-colors">
                     <h4 className="font-medium text-foreground">{friend.name}</h4>
                     <p className="text-sm text-muted-foreground">{friend.email}</p>
                   </div>
                 )) : <div className="text-muted-foreground">There's no way you can have no friends 💖</div>}
               </div>
             </div>
-          </div>
         </div>
       </div>
     </div>

@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./fonts.css";
 
 @theme {
   --color-background: #1a1a1a;
@@ -21,6 +22,10 @@
   --color-input: #3a3a3a;
   --color-ring: #ffdf22;
   --radius: 0.5rem;
+  --font-family-fira: "Fira Sans Condensed", sans-serif;
+  --font-family-lexend: "Lexend Deca", sans-serif;
+  --font-family-noto: "Noto Sans Display", sans-serif;
+  --font-family-onest: "Onest", sans-serif;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -44,6 +49,10 @@
     --color-border: #3a3a3a;
     --color-input: #3a3a3a;
     --color-ring: #ffdf22;
+    --font-family-fira: "Fira Sans Condensed", sans-serif;
+    --font-family-lexend: "Lexend Deca", sans-serif;
+    --font-family-noto: "Noto Sans Display", sans-serif;
+    --font-family-onest: "Onest", sans-serif;
   }
 }
 
@@ -54,6 +63,7 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+    font-family: var(--font-family-onest);
   }
   h1,
   h2,

@@ -1,9 +1,30 @@
 import React, { useState } from 'react'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select'
-import { Plus, FileText, Upload, Image, Users, X } from 'lucide-react'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
+} from './ui/dialog'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from './ui/select'
+import {
+  Plus,
+  FileText,
+  Upload,
+  Image,
+  Users,
+  X
+} from 'lucide-react'
 
 const CreateSecretForm = ({ friends = [], onAddSecret }) => {
   const [isOpen, setIsOpen] = useState(false)
@@ -12,41 +33,46 @@ const CreateSecretForm = ({ friends = [], onAddSecret }) => {
     description: '',
     thumbnailImage: null,
     documentFile: null,
-    selectedFriends: []
+    selectedFriends: [],
+    interval: '' // NEW FIELD
   })
   const [errors, setErrors] = useState({})
   const [imagePreview, setImagePreview] = useState(null)
 
   const validateForm = () => {
     const newErrors = {}
-    
+
     if (!formData.name.trim()) {
       newErrors.name = 'Secret name is required'
     }
-    
+
     if (!formData.description.trim()) {
       newErrors.description = 'Description is required'
     }
-    
+
     if (!formData.thumbnailImage) {
       newErrors.thumbnailImage = 'Thumbnail image is required'
     }
-    
+
     if (!formData.documentFile) {
       newErrors.documentFile = 'Document file is required'
     }
-    
+
     if (formData.selectedFriends.length === 0) {
       newErrors.selectedFriends = 'Please select at least one friend'
     }
-    
+
+    if (!formData.interval) {
+      newErrors.interval = 'Please select an interval'
+    }
+
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    
+
     if (validateForm()) {
       const newSecret = {
         id: Date.now(),
@@ -55,18 +81,20 @@ const CreateSecretForm = ({ friends = [], onAddSecret }) => {
         date: new Date().toISOString().split('T')[0],
         thumbnailImage: formData.thumbnailImage,
         documentFile: formData.documentFile,
-        sharedWith: formData.selectedFriends
+        sharedWith: formData.selectedFriends,
+        interval: formData.interval // INCLUDE INTERVAL
       }
-      
+
       onAddSecret(newSecret)
-      
+
       // Reset form
       setFormData({
         name: '',
         description: '',
         thumbnailImage: null,
         documentFile: null,
-        selectedFriends: []
+        selectedFriends: [],
+        interval: ''
       })
       setErrors({})
       setImagePreview(null)
@@ -85,12 +113,11 @@ const CreateSecretForm = ({ friends = [], onAddSecret }) => {
     const file = e.target.files[0]
     if (file) {
       setFormData(prev => ({ ...prev, thumbnailImage: file }))
-      
-      // Create preview
+
       const reader = new FileReader()
       reader.onload = (e) => setImagePreview(e.target.result)
       reader.readAsDataURL(file)
-      
+
       if (errors.thumbnailImage) {
         setErrors(prev => ({ ...prev, thumbnailImage: '' }))
       }
@@ -145,10 +172,10 @@ const CreateSecretForm = ({ friends = [], onAddSecret }) => {
             Create a new secret document and share it with your trusted friends.
           </DialogDescription>
         </DialogHeader>
-        
+
         <form onSubmit={handleSubmit} className="space-y-6 mt-6">
           <div className="space-y-4">
-            {/* Secret Name Field */}
+            {/* Secret Name */}
             <div className="space-y-2">
               <label htmlFor="name" className="text-sm font-medium text-foreground flex items-center gap-2">
                 <FileText className="h-4 w-4" />
@@ -162,12 +189,10 @@ const CreateSecretForm = ({ friends = [], onAddSecret }) => {
                 onChange={(e) => handleInputChange('name', e.target.value)}
                 className={errors.name ? 'border-red-500 focus-visible:ring-red-500' : ''}
               />
-              {errors.name && (
-                <p className="text-sm text-red-500">{errors.name}</p>
-              )}
+              {errors.name && <p className="text-sm text-red-500">{errors.name}</p>}
             </div>
 
-            {/* Description Field */}
+            {/* Description */}
             <div className="space-y-2">
               <label htmlFor="description" className="text-sm font-medium text-foreground">
                 Description
@@ -179,12 +204,10 @@ const CreateSecretForm = ({ friends = [], onAddSecret }) => {
                 onChange={(e) => handleInputChange('description', e.target.value)}
                 className={`flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${errors.description ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
               />
-              {errors.description && (
-                <p className="text-sm text-red-500">{errors.description}</p>
-              )}
+              {errors.description && <p className="text-sm text-red-500">{errors.description}</p>}
             </div>
 
-            {/* Thumbnail Image Upload */}
+            {/* Thumbnail Upload */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground flex items-center gap-2">
                 <Image className="h-4 w-4" />
@@ -217,15 +240,13 @@ const CreateSecretForm = ({ friends = [], onAddSecret }) => {
                   </div>
                 )}
               </div>
-              {errors.thumbnailImage && (
-                <p className="text-sm text-red-500">{errors.thumbnailImage}</p>
-              )}
+              {errors.thumbnailImage && <p className="text-sm text-red-500">{errors.thumbnailImage}</p>}
               <p className="text-xs text-muted-foreground">
                 Upload an image to use as thumbnail on the dashboard
               </p>
             </div>
 
-            {/* Document File Upload */}
+            {/* Document Upload */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground flex items-center gap-2">
                 <Upload className="h-4 w-4" />
@@ -242,9 +263,7 @@ const CreateSecretForm = ({ friends = [], onAddSecret }) => {
                   {formData.documentFile.name}
                 </p>
               )}
-              {errors.documentFile && (
-                <p className="text-sm text-red-500">{errors.documentFile}</p>
-              )}
+              {errors.documentFile && <p className="text-sm text-red-500">{errors.documentFile}</p>}
             </div>
 
             {/* Friends Selection */}
@@ -253,8 +272,6 @@ const CreateSecretForm = ({ friends = [], onAddSecret }) => {
                 <Users className="h-4 w-4" />
                 Share with Friends (Max 3)
               </label>
-              
-              {/* Selected Friends Display */}
               {formData.selectedFriends.length > 0 && (
                 <div className="flex flex-wrap gap-2 mb-2">
                   {formData.selectedFriends.map((friend) => (
@@ -274,8 +291,6 @@ const CreateSecretForm = ({ friends = [], onAddSecret }) => {
                   ))}
                 </div>
               )}
-
-              {/* Friends Dropdown */}
               {formData.selectedFriends.length < 3 && (
                 <Select onValueChange={handleFriendSelect}>
                   <SelectTrigger>
@@ -292,29 +307,43 @@ const CreateSecretForm = ({ friends = [], onAddSecret }) => {
                   </SelectContent>
                 </Select>
               )}
-              
-              {errors.selectedFriends && (
-                <p className="text-sm text-red-500">{errors.selectedFriends}</p>
-              )}
+              {errors.selectedFriends && <p className="text-sm text-red-500">{errors.selectedFriends}</p>}
               <p className="text-xs text-muted-foreground">
                 Select up to 3 friends to share this secret with
+              </p>
+            </div>
+
+            {/* Interval Selection */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">
+                Interval
+              </label>
+              <Select onValueChange={(value) => handleInputChange('interval', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select interval..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="10s">10 seconds</SelectItem>
+                  <SelectItem value="30s">30 seconds</SelectItem>
+                  <SelectItem value="1m">1 minute</SelectItem>
+                  <SelectItem value="30m">30 minutes</SelectItem>
+                  <SelectItem value="1h">1 hour</SelectItem>
+                  <SelectItem value="1w">1 week</SelectItem>
+                  <SelectItem value="1mo">1 month</SelectItem>
+                </SelectContent>
+              </Select>
+              {errors.interval && <p className="text-sm text-red-500">{errors.interval}</p>}
+              <p className="text-xs text-muted-foreground">
+                Set how frequently this secret should trigger an event or action.
               </p>
             </div>
           </div>
 
           <DialogFooter className="gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setIsOpen(false)}
-              className="flex-1"
-            >
+            <Button type="button" variant="outline" onClick={() => setIsOpen(false)} className="flex-1">
               Cancel
             </Button>
-            <Button
-              type="submit"
-              className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground"
-            >
+            <Button type="submit" className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground">
               <FileText className="h-4 w-4 mr-2" />
               Create Secret
             </Button>

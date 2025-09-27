@@ -25,6 +25,55 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: "Internal server error" });
 });
 
+async function sleep(ms) {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
+async function connectWithRetry({
+  maxRetries = 5,
+  initialDelayMs = 1000,
+  factor = 2,
+} = {}) {
+  let attempt = 0;
+  let delay = initialDelayMs;
+  while (attempt < maxRetries) {
+    try {
+      console.log(`[db] attempt ${attempt + 1} to connect...`);
+      // $connect opens the connection pool
+      await prisma.$connect();
+      // optional cheap check
+      await prisma.$queryRaw`SELECT 1`;
+      console.log("[db] connected");
+      return; // success
+    } catch (err) {
+      console.error(
+        `[db] connect failed (attempt ${attempt + 1}):`,
+        err.message || err
+      );
+      attempt++;
+      if (attempt >= maxRetries) break;
+      console.log(`[db] retrying in ${delay}ms...`);
+      await sleep(delay);
+      delay *= factor;
+    }
+  }
+  throw new Error("Could not connect to DB after retries");
+}
+
+(async function start() {
+  try {
+    await connectWithRetry({ maxRetries: 6, initialDelayMs: 1000, factor: 2 });
+    app.listen(PORT, () => console.log(`Server listening on ${PORT}`));
+  } catch (err) {
+    console.error(
+      "[startup] fatal: could not connect to DB — exiting.",
+      err.message || err
+    );
+    // crash so orchestrator can restart the service (or fix env)
+    process.exit(1);
+  }
+})();
+
 // ensure prisma disconnects gracefully on exit
 process.on("SIGINT", async () => {
   await prisma.$disconnect();
@@ -35,6 +84,6 @@ process.on("SIGTERM", async () => {
   process.exit(0);
 });
 
-app.listen(PORT, () => {
-  console.log(`Server listening on port ${PORT}`);
-});
+// app.listen(PORT, () => {
+//   console.log(`Server listening on port ${PORT}`);
+// });

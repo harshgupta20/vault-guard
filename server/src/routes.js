@@ -168,7 +168,7 @@ module.exports = (prisma) => {
       return res.json({
         success: true,
         message: "Friends fetched successfully",
-        data: { friends },
+        data: [...friends],
       });
     } catch (err) {
       console.error(err);

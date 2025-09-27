@@ -1,5 +1,50 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { CreditCard, Lock, TrendingUp, FileText, Shield, Key } from 'lucide-react'
+import { useWallet } from '../hooks/useWallet';
+
+const Wills = () => {
+
+  const {account,isConnected} = useWallet();
+  const [wills, setWills] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
+
+  useEffect(() => {
+    console.log(account)
+    async function fetchWills() {
+      if (account) {
+        try {
+          const response = await fetch(`https://eth-global-api.vercel.app/api/wills?owner=${account}`);
+          const data = await response.json();
+          console.log('Fetched wills:', data);
+          setWills(data.data.wills);
+          setLoading(false);
+        } catch (error) {
+          console.error('Error fetching wills:', error);
+        }
+      }
+    }
+
+    fetchWills();
+  }, [account, isConnected])
+
+  return (
+    <div className="bg-primary text-primary-foreground p-4 rounded-md mb-6">
+    {loading && (<li>Loading wills...</li>)}
+    {wills.length > 0 && (
+      <div className="mt-4">
+        <h4 className="font-semibold">Your Wills:</h4>
+        <ul className="list-disc list-inside">
+          <div>
+            <pre>
+              {JSON.stringify(wills, null, 4)}
+            </pre>
+            </div>
+        </ul>
+      </div>
+    )}
+  </div>
+  )
+}
 
 const SecretsList = ({ secrets = [] }) => {
   const getSecretIcon = (title) => {
@@ -23,6 +68,9 @@ const SecretsList = ({ secrets = [] }) => {
     <div className="flex-1 lg:w-2/3">
       <h2 className="text-2xl font-bold text-card-foreground mb-6">Your Secrets</h2>
       <div className="space-y-4">
+        <div>
+          <Wills />
+        </div>
         {secrets.length ? secrets.map((secret) => (
           <div key={secret.id} className="bg-background border border-border rounded-md p-4 hover:p-6 transition-all duration-300 ease-in-out">
             <div className="flex items-start gap-3">

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Button } from '../components/ui/button'
 import { Plus, UserPlus } from 'lucide-react'
 import SecretsList from '../components/SecretsList'
@@ -39,12 +39,16 @@ const Home = () => {
     }
   ]
 
-  // Dummy friends data
-  const dummyFriends = [
+  // Friends state management
+  const [friends, setFriends] = useState([
     { id: 1, name: "Alice Johnson", email: "alice@example.com", avatarColor: "from-blue-400 to-purple-500" },
     { id: 2, name: "Bob Smith", email: "bob@example.com", avatarColor: "from-green-400 to-blue-500" },
     { id: 3, name: "Carol Davis", email: "carol@example.com", avatarColor: "from-pink-400 to-red-500" }
-  ]
+  ])
+
+  const handleAddFriend = (newFriend) => {
+    setFriends(prevFriends => [...prevFriends, newFriend])
+  }
 
   return (
     <div className="min-h-screen bg-background p-6">
@@ -54,10 +58,6 @@ const Home = () => {
           <Button className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 rounded-lg shadow-sm transition-all duration-200 hover:shadow-md">
             <Plus className="h-4 w-4 mr-2" />
             Create New Secret
-          </Button>
-          <Button className="bg-secondary hover:bg-secondary/80 text-secondary-foreground px-6 py-3 rounded-lg shadow-sm transition-all duration-200 hover:shadow-md">
-            <UserPlus className="h-4 w-4 mr-2" />
-            Add a Nominee/Will
           </Button>
         </div>
 
@@ -71,7 +71,7 @@ const Home = () => {
           </div>
 
           {/* Friends List Section */}
-          <FriendsList friends={dummyFriends} />
+          <FriendsList friends={friends} onAddFriend={handleAddFriend} />
         </div>
       </div>
     </div>

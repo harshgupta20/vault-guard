@@ -1,1 +1,106 @@
 @import "tailwindcss";
+@import "./fonts.css";
+
+@theme {
+  --color-background: #1a1a1a;
+  --color-foreground: #f5f5f5;
+  --color-card: #2a2a2a;
+  --color-card-foreground: #f5f5f5;
+  --color-popover: #2a2a2a;
+  --color-popover-foreground: #f5f5f5;
+  --color-primary: #ffdf22;
+  --color-primary-foreground: #0f172a;
+  --color-secondary: #2a2a2a;
+  --color-secondary-foreground: #f5f5f5;
+  --color-muted: #3a3a3a;
+  --color-muted-foreground: #a0a0a0;
+  --color-accent: #ffdf22;
+  --color-accent-foreground: #0f172a;
+  --color-destructive: #ef4444;
+  --color-destructive-foreground: #f8fafc;
+  --color-border: #3a3a3a;
+  --color-input: #3a3a3a;
+  --color-ring: #ffdf22;
+  --radius: 0.5rem;
+  --font-family-fira: "Fira Sans Condensed", sans-serif;
+  --font-family-lexend: "Lexend Deca", sans-serif;
+  --font-family-noto: "Noto Sans Display", sans-serif;
+  --font-family-onest: "Onest", sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  @theme {
+    --color-background: #1a1a1a;
+    --color-foreground: #f5f5f5;
+    --color-card: #2a2a2a;
+    --color-card-foreground: #f5f5f5;
+    --color-popover: #2a2a2a;
+    --color-popover-foreground: #f5f5f5;
+    --color-primary: #ffdf22;
+    --color-primary-foreground: #0f172a;
+    --color-secondary: #2a2a2a;
+    --color-secondary-foreground: #f5f5f5;
+    --color-muted: #3a3a3a;
+    --color-muted-foreground: #a0a0a0;
+    --color-accent: #ffdf22;
+    --color-accent-foreground: #0f172a;
+    --color-destructive: #ef4444;
+    --color-destructive-foreground: #f8fafc;
+    --color-border: #3a3a3a;
+    --color-input: #3a3a3a;
+    --color-ring: #ffdf22;
+    --font-family-fira: "Fira Sans Condensed", sans-serif;
+    --font-family-lexend: "Lexend Deca", sans-serif;
+    --font-family-noto: "Noto Sans Display", sans-serif;
+    --font-family-onest: "Onest", sans-serif;
+  }
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-family-onest);
+  }
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    color: var(--color-foreground);
+  }
+}
+
+@keyframes slideInFromTop {
+  0% {
+    transform: translateY(-100%) scale(0.95);
+    opacity: 0;
+  }
+  50% {
+    transform: translateY(-20%) scale(0.98);
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutToTop {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(-20%) scale(0.98);
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateY(-100%) scale(0.95);
+    opacity: 0;
+  }
+}

@@ -15,8 +15,15 @@ const FriendsList = ({ friends = [] }) => {
       <div className="space-y-3">
         {friends.length ? friends.map((friend) => (
           <div key={friend.id} className="bg-background border border-border rounded-md p-4 hover:p-6 transition-all duration-300 ease-in-out">
-            <h4 className="font-medium text-foreground">{friend.name}</h4>
-            <p className="text-sm text-muted-foreground">{friend.email}</p>
+            <div className="flex items-center gap-3">
+              <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${friend.avatarColor || 'from-blue-400 to-purple-500'} flex items-center justify-center text-white font-semibold text-sm`}>
+                {friend.name.split(' ').map(n => n[0]).join('')}
+              </div>
+              <div className="flex-1">
+                <h4 className="font-medium text-foreground">{friend.name}</h4>
+                <p className="text-sm text-muted-foreground">{friend.email}</p>
+              </div>
+            </div>
           </div>
         )) : <div className="text-muted-foreground">There's no way you can have no friends 💖</div>}
       </div>

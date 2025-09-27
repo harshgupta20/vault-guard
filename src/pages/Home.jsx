@@ -24,14 +24,26 @@ const Home = () => {
       title: "Investment Portfolio",
       description: "Stock holdings and crypto wallets",
       date: "2024-01-05"
+    },
+    {
+      id: 4,
+      title: "Legal Documents",
+      description: "Will, power of attorney, and contracts",
+      date: "2024-01-03"
+    },
+    {
+      id: 5,
+      title: "Personal Security Codes",
+      description: "Safe combinations and security system codes",
+      date: "2024-01-01"
     }
   ]
 
   // Dummy friends data
   const dummyFriends = [
-    { id: 1, name: "Alice Johnson", email: "alice@example.com" },
-    { id: 2, name: "Bob Smith", email: "bob@example.com" },
-    { id: 3, name: "Carol Davis", email: "carol@example.com" }
+    { id: 1, name: "Alice Johnson", email: "alice@example.com", avatarColor: "from-blue-400 to-purple-500" },
+    { id: 2, name: "Bob Smith", email: "bob@example.com", avatarColor: "from-green-400 to-blue-500" },
+    { id: 3, name: "Carol Davis", email: "carol@example.com", avatarColor: "from-pink-400 to-red-500" }
   ]
 
   return (

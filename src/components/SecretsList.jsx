@@ -1,17 +1,42 @@
 import React from 'react'
+import { CreditCard, Lock, TrendingUp, FileText, Shield, Key } from 'lucide-react'
 
 const SecretsList = ({ secrets = [] }) => {
+  const getSecretIcon = (title) => {
+    const titleLower = title.toLowerCase()
+    if (titleLower.includes('bank') || titleLower.includes('account') || titleLower.includes('financial')) {
+      return <CreditCard className="h-5 w-5 text-blue-500" />
+    } else if (titleLower.includes('password') || titleLower.includes('social') || titleLower.includes('media')) {
+      return <Lock className="h-5 w-5 text-green-500" />
+    } else if (titleLower.includes('investment') || titleLower.includes('portfolio') || titleLower.includes('crypto') || titleLower.includes('stock')) {
+      return <TrendingUp className="h-5 w-5 text-purple-500" />
+    } else if (titleLower.includes('document') || titleLower.includes('file') || titleLower.includes('legal')) {
+      return <FileText className="h-5 w-5 text-orange-500" />
+    } else if (titleLower.includes('security') || titleLower.includes('private') || titleLower.includes('personal')) {
+      return <Shield className="h-5 w-5 text-red-500" />
+    } else {
+      return <Key className="h-5 w-5 text-gray-500" />
+    }
+  }
+
   return (
     <div className="flex-1 lg:w-2/3">
       <h2 className="text-2xl font-bold text-card-foreground mb-6">Your Secrets</h2>
       <div className="space-y-4">
         {secrets.length ? secrets.map((secret) => (
           <div key={secret.id} className="bg-background border border-border rounded-md p-4 hover:p-6 transition-all duration-300 ease-in-out">
-            <div className="flex justify-between items-start mb-2">
-              <h3 className="text-lg font-semibold text-foreground">{secret.title}</h3>
-              <span className="text-sm text-muted-foreground">{secret.date}</span>
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 mt-1">
+                {getSecretIcon(secret.title)}
+              </div>
+              <div className="flex-1">
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="text-lg font-semibold text-foreground">{secret.title}</h3>
+                  <span className="text-sm text-muted-foreground">{secret.date}</span>
+                </div>
+                <p className="text-muted-foreground">{secret.description}</p>
+              </div>
             </div>
-            <p className="text-muted-foreground">{secret.description}</p>
           </div>
         )) : <div className="text-muted-foreground">We know you got some secrets 😉</div>}
       </div>

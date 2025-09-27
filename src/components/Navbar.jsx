@@ -1,6 +1,6 @@
 import React from 'react'
 import { Link } from 'react-router'
-import { Menu } from 'lucide-react'
+import { Menu, Wallet } from 'lucide-react'
 import { Button } from './ui/button'
 import {
   Sheet,
@@ -13,7 +13,7 @@ import {
 
 const Navbar = () => {
     return (
-        <nav className='flex items-center justify-between p-4 h-full bg-background/95 backdrop-blur-sm border border-border rounded-lg shadow-lg mx-4 mt-4'>
+        <nav className='flex items-center justify-between p-4 h-full bg-background/95 backdrop-blur-sm border border-border rounded-lg shadow-lg ml-50 w-6xl mx-4 mt-4'>
             {/* Hamburger Menu */}
             <Sheet className="rounded-sm">
                 <SheetTrigger asChild>
@@ -39,6 +39,12 @@ const Navbar = () => {
                     </div>
                 </SheetContent>
             </Sheet>
+
+            {/* Connect Wallet Button */}
+            <Button className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium px-6 py-2 rounded-lg shadow-sm transition-all duration-200 hover:shadow-md">
+                <Wallet className="h-4 w-4 mr-2" />
+                Connect Wallet
+            </Button>
         </nav>
     )
 }

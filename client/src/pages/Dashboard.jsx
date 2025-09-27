@@ -10,6 +10,7 @@ import { useFriendsAPI } from "../hooks/useFriendsAPI";
 const Home = () => {
   // Wallet connection
   const { account, isConnected } = useWallet();
+  const [showCreateSecretForm, setShowCreateSecretForm] = useState(false);
 
   // Secrets state management
   const [secrets, setSecrets] = useState([
@@ -72,7 +73,20 @@ const Home = () => {
       <div className="max-w-7xl mx-auto">
         {/* Top Action Buttons */}
         <div className="flex gap-4 mb-8">
-          <CreateSecretForm friends={[]} onAddSecret={handleAddSecret} />
+          {showCreateSecretForm && (
+            <CreateSecretForm
+              setShowCreateSecretForm={setShowCreateSecretForm}
+              showCreateSecretForm={showCreateSecretForm}
+              onAddSecret={handleAddSecret}
+            />
+          )}
+          <Button
+            onClick={() => setShowCreateSecretForm(true)}
+            className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 rounded-lg shadow-sm transition-all duration-200 hover:shadow-md"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Create New Secret
+          </Button>
         </div>
 
         <div className="flex flex-col lg:flex-row gap-6">

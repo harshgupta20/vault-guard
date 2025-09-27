@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import AddFriendForm from "./AddFriendForm";
 import { Loader2, AlertCircle, CloudCog } from "lucide-react";
 const API_BASE_URL = "http://localhost:3000";
-const FriendsList = ({ onAddFriend, isConnected = false, account }) => {
+const FriendsList = ({ onAddFriend, isConnected = false }) => {
   // Friends API integration
   // const {
   //   friends,
@@ -18,6 +18,7 @@ const FriendsList = ({ onAddFriend, isConnected = false, account }) => {
   const getFriendsList = async () => {
     try {
       setLoading(true);
+      const account = localStorage.getItem("walletAddress");
       const response = await fetch(`${API_BASE_URL}/friends/${account}`);
       const data = await response.json();
       setFriends(data?.data);
@@ -33,7 +34,7 @@ const FriendsList = ({ onAddFriend, isConnected = false, account }) => {
 
   useEffect(() => {
     getFriendsList();
-  }, [account]);
+  }, []);
 
   return (
     <div className="flex-1 lg:w-1/3">

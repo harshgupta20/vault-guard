@@ -72,7 +72,7 @@ const Home = () => {
           {/* Friends List Section */}
           <div className="flex-1 lg:w-1/3">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-card-foreground">Friend List</h2>
+                <h2 className="text-2xl font-bold text-card-foreground">Friends List</h2>
                 <Button variant="outline" size="sm" className="text-primary border-primary hover:bg-primary hover:text-primary-foreground">
                   <Plus className="h-4 w-4 mr-1" />
                   Add

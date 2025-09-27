@@ -1,25 +1,18 @@
-import React, { useEffect } from 'react'
-import { Button } from '../components/ui/button'
-import { Plus, UserPlus } from 'lucide-react'
-import SecretsList from '../components/SecretsList'
-import FriendsList from '../components/FriendsList'
-import { Navigate } from 'react-router'
+import { useEffect } from 'react'
+import { useNavigate } from 'react-router' // useNavigate, not Navigate
 
 const Home = () => {
-
-  const navigate = Navigate();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    navigate('/dashboard')
-  }, [])
+    navigate('/dashboard');
+  }, [navigate]);
 
   return (
-    <>
-      <div>
-        Redirecting...
-      </div>
-    </>
-  )
-}
+    <div>
+      Redirecting...
+    </div>
+  );
+};
 
-export default Home
+export default Home;

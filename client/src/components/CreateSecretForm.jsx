@@ -93,44 +93,6 @@ async function submitStep2(unSignedTx, signer) {
   }
 }
 
-// submit signed transaction to api
-async function submitStep3(signedTx) {
-  try {
-    console.log("🔄 Submitting signed will transaction...", signedTx);
-
-    const response = await fetch(
-      `https://eth-global-api.vercel.app/api/will/broadcast`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          signedTransaction: signedTx,
-        }),
-      }
-    );
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(
-        errorData.error || `HTTP error! status: ${response.status}`
-      );
-    }
-
-    const data = await response.json();
-
-    if (!data.success) {
-      throw new Error(data.error || "Failed to submit transaction");
-    }
-
-    console.log("✅ Transaction submitted successfully:", data);
-    return data;
-  } catch (error) {
-    console.error("❌ Error submitting transaction:", error);
-    throw error;
-  }
-}
 
 const CreateSecretForm = ({
   showCreateSecretForm,
@@ -243,12 +205,12 @@ const CreateSecretForm = ({
     }
   };
 
-  const handleFriendSelect = (friendId) => {
-    const friend = friends.find((f) => f.id === parseInt(friendId));
+  const handleFriendSelect = (friendWalletAddress) => {
+    const friend = friends.find((f) => f.friendWalletAddress === friendWalletAddress);
     if (
       friend &&
       formData.selectedFriends.length < 3 &&
-      !formData.selectedFriends.find((f) => f.id === friend.id)
+      !formData.selectedFriends.find((f) => f.friendWalletAddress === friend.friendWalletAddress)
     ) {
       setFormData((prev) => ({
         ...prev,
@@ -260,10 +222,10 @@ const CreateSecretForm = ({
     }
   };
 
-  const removeFriend = (friendId) => {
+  const removeFriend = (friendWalletAddress) => {
     setFormData((prev) => ({
       ...prev,
-      selectedFriends: prev.selectedFriends.filter((f) => f.id !== friendId),
+      selectedFriends: prev.selectedFriends.filter((f) => f.friendWalletAddress !== friendWalletAddress),
     }));
   };
 
@@ -420,13 +382,13 @@ const CreateSecretForm = ({
                 <div className="flex flex-wrap gap-2 mb-2">
                   {formData.selectedFriends.map((friend) => (
                     <div
-                      key={friend.id}
+                      key={friend.friendWalletAddress}
                       className="flex items-center gap-2 bg-primary/10 text-primary px-3 py-1 rounded-full text-sm"
                     >
-                      <span>{friend.name}</span>
+                      <span>{friend.friendName}</span>
                       <button
                         type="button"
-                        onClick={() => removeFriend(friend.id)}
+                        onClick={() => removeFriend(friend.friendWalletAddress)}
                         className="hover:bg-primary/20 rounded-full p-1"
                       >
                         <X className="h-3 w-3" />
@@ -453,9 +415,9 @@ const CreateSecretForm = ({
                       .map((friend) => (
                         <SelectItem
                           key={friend.friendWalletAddress}
-                          value={friend.friendWalletAddress.toString()}
+                          value={friend.friendWalletAddress}
                         >
-                          {friend.friendName}
+                          {friend.friendName} ({friend.friendWalletAddress.slice(0, 8)}...)
                         </SelectItem>
                       ))}
                   </SelectContent>
@@ -518,12 +480,36 @@ const CreateSecretForm = ({
                 try {
                   console.log("🚀 Starting will creation process...");
 
+                  // Get nominees from selected friends
+                  const nominees = formData.selectedFriends.length > 0 
+                    ? formData.selectedFriends.map(friend => friend.friendWalletAddress)
+                    : [account]; // Use own address as fallback if no friends selected
+
+                  console.log("📋 Selected nominees:", nominees);
+
+                  // Convert interval to seconds
+                  const intervalToSeconds = (interval) => {
+                    switch (interval) {
+                      case "10s": return 10;
+                      case "30s": return 30;
+                      case "1m": return 60;
+                      case "30m": return 30 * 60;
+                      case "1h": return 60 * 60;
+                      case "1w": return 7 * 24 * 60 * 60;
+                      case "1mo": return 30 * 24 * 60 * 60;
+                      default: return 30; // Default to 30 seconds
+                    }
+                  };
+
+                  const deadlineSeconds = intervalToSeconds(formData.interval);
+                  console.log("⏰ Selected interval:", formData.interval, "->", deadlineSeconds, "seconds");
+
                   // Step 1: Prepare transaction
                   const unSignedTx = await submitStep1({
                     userAddress: account,
-                    nominees: ["0x0B80f1bf7ED4e33DD6AB6Ddbb4437fC3CE97F8A1"],
-                    deadlineSeconds: 30,
-                    encryptedData: "test-secret-data",
+                    nominees: nominees,
+                    deadlineSeconds: deadlineSeconds,
+                    encryptedData: formData.description || formData.name || "secret-data",
                   });
 
                   // Step 2: Sign and send transaction (MetaMask will handle both)

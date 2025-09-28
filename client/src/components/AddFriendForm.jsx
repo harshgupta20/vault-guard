@@ -11,6 +11,7 @@ import {
   DialogTrigger,
 } from "./ui/dialog";
 import { Plus, UserPlus, Mail, Wallet, Loader2 } from "lucide-react";
+import { ethers } from "ethers";
 
 const API_BASE_URL = "http://localhost:3000";
 const AddFriendForm = ({
@@ -28,6 +29,45 @@ const AddFriendForm = ({
   const [submitError, setSubmitError] = useState("");
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [ensName, setEnsName] = useState("");
+  const [isResolvingEns, setIsResolvingEns] = useState(false);
+
+  // ENS Resolution function using ethers.js
+  const resolveEnsName = async () => {
+    if (!ensName.trim()) return;
+    
+    setIsResolvingEns(true);
+    try {
+      // Check if we have access to a provider (MetaMask, etc.)
+      let provider;
+      
+      if (window.ethereum) {
+        // Use MetaMask provider
+        provider = new ethers.BrowserProvider(window.ethereum);
+      } else {
+        // Fallback to a public provider for Sepolia
+        provider = new ethers.JsonRpcProvider('https://ethereum-sepolia-rpc.publicnode.com');
+      }
+
+      console.log('Resolving ENS name:', ensName.trim());
+      
+      // Resolve ENS name to address
+      const resolvedAddress = await provider.resolveName(ensName.trim());
+      
+      if (resolvedAddress) {
+        console.log('ENS resolved to address:', resolvedAddress);
+        handleInputChange('walletAddress', resolvedAddress);
+        setEnsName(''); // Clear ENS input after successful resolution
+      } else {
+        throw new Error('ENS name not found or no address set');
+      }
+    } catch (error) {
+      console.error('ENS resolution error:', error);
+      setErrors(prev => ({ ...prev, ensName: error.message }));
+    } finally {
+      setIsResolvingEns(false);
+    }
+  };
   const addFriend = async (friendData) => {
     setLoading(true);
     setError(null);
@@ -233,6 +273,55 @@ const AddFriendForm = ({
               )}
             </div>
 
+            {/* ENS Resolution Field */}
+            <div className="space-y-2">
+              <label
+                htmlFor="ensName"
+                className="text-sm font-medium text-foreground flex items-center gap-2"
+              >
+                <Wallet className="h-4 w-4" />
+                ENS Name (Optional)
+              </label>
+              <div className="flex gap-2">
+                <Input
+                  id="ensName"
+                  type="text"
+                  placeholder="friend.eth"
+                  value={ensName}
+                  onChange={(e) => {
+                    setEnsName(e.target.value);
+                    // Clear ENS error when user types
+                    if (errors.ensName) {
+                      setErrors(prev => ({ ...prev, ensName: "" }));
+                    }
+                  }}
+                  className={
+                    errors.ensName
+                      ? "border-red-500 focus-visible:ring-red-500"
+                      : ""
+                  }
+                />
+                <Button
+                  type="button"
+                  onClick={resolveEnsName}
+                  disabled={!ensName.trim() || isResolvingEns}
+                  className="px-4"
+                >
+                  {isResolvingEns ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    "Resolve"
+                  )}
+                </Button>
+              </div>
+              {errors.ensName && (
+                <p className="text-sm text-red-500">{errors.ensName}</p>
+              )}
+              <p className="text-xs text-muted-foreground">
+                Enter an ENS name and click "Resolve" to auto-fill the wallet address
+              </p>
+            </div>
+
             {/* Wallet Address Field */}
             <div className="space-y-2">
               <label
@@ -240,12 +329,12 @@ const AddFriendForm = ({
                 className="text-sm font-medium text-foreground flex items-center gap-2"
               >
                 <Wallet className="h-4 w-4" />
-                Wallet Address or ENS Name
+                Wallet Address
               </label>
               <Input
                 id="walletAddress"
                 type="text"
-                placeholder="0x... or friend.eth"
+                placeholder="0x..."
                 value={formData.walletAddress}
                 onChange={(e) =>
                   handleInputChange("walletAddress", e.target.value)
@@ -260,7 +349,7 @@ const AddFriendForm = ({
                 <p className="text-sm text-red-500">{errors.walletAddress}</p>
               )}
               <p className="text-xs text-muted-foreground">
-                Enter either a wallet address (0x...) or an ENS name (name.eth)
+                Enter the wallet address directly or use ENS resolution above
               </p>
             </div>
           </div>
